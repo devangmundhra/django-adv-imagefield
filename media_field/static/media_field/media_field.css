@@ -1,0 +1,18 @@
+.media_widget_wrapper{
+    display:inline-block;
+    min-width:270px;
+    max-width:1200px;
+    width: 100%;
+}
+
+#media_widget_image, .media_widget_inputs{
+    width:30%;
+}
+
+.media_widget_inputs input[type=text]{
+    width: 70%;
+}
+
+.media_widget_inputs input[type=submit]{
+    width: 26%;
+}

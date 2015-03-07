@@ -1,0 +1,399 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>custom</title>
+    
+</head>
+<body id="Hallo" onload="">
+    
+<div id="id_{name}" class="media_widget_wrapper" style="display:inline-block;min-width:270px; width:300px;max-width:1200px;">
+    <div class="media_widget_row">
+        <img id="media_widget_image" src="" style="width:100%;"/>
+    </div>
+    <br/>
+    <div class="media_widget_row">
+        <div class="media_widget_row">
+            <input id="searchInput" type="text" style="width:70%;">
+            <input id="searchButton" type="submit" style="width:26%;" value="Search"></input>
+        </div>
+        <br/>
+    </div>
+    <div class="media_widget_row" id="flickr_google_wrapper">
+    </div>
+    <br/>
+    <div class="media_widget_row">
+        <div class="media_widget_row">
+            <input id="urlInput" type="text" style="width:70%;">
+            <input id="urlButton" type="submit" style="width:26%;" value="Go"></input>
+        </div>
+    </div>
+    <div class="media_widget_row" id="url_wrapper">
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+/* Creating an ability to format a String */
+if(!String.prototype.format) {
+    var format = function() {
+        var args = arguments;
+        var result = this.replace(/{(\d+)}/g, function(match, number) {
+            return typeof args[number] != 'undefined' ? args[number] : match;
+        })
+
+        return result;
+    }
+    String.prototype.format = format;
+};
+
+var nextPage = function(callback) {
+    if(this.page < this.pages) {
+        this.page += 1;
+    }
+};
+var prevPage = function() {
+    if(this.page > 1) {
+        this.page -= 1;
+    }
+};
+var getPhotos = function() {
+    return this.photos;
+};
+var googleNextPage = function(){
+    this.page += 1;
+    this.start += 8;
+};
+
+var googlePrevPage = function(){
+    if(this.page > 1){
+        this.page -= 1;
+        this.start -= 8;
+    }
+};
+
+var getGooglePhotos = function() {
+    return this.photos;
+};
+
+
+
+var loadJSON = function(url, success, error) {
+    var ajax = new XMLHttpRequest();
+    var processResponse = function(){
+        console.log(4);
+        console.log(ajax.status);
+        console.log(ajax.readyState);
+        if(success && ajax.status == 200 && ajax.readyState == 4){
+            console.log(ajax.responseText);
+            return success(ajax.responseText);
+        };
+        if(error || ajax.status == 404 && ajax.readyState == 4) {
+            console.log(ajax.responseText);
+            return error(ajax.responseText);
+        }
+    };
+    ajax.onreadystatechange = processResponse;
+    console.log(1);
+    ajax.open("GET", url, true);
+    console.log(2);
+    ajax.send();
+    console.log(3);
+
+};
+
+var jsonGoogleApi = function(response){
+    var response = JSON.parse(response);
+    console.log(response);
+    var data = response.items;
+    images.google.start = response.queries.request[0].startIndex;
+    images.google.pages = Math.ceil(Number(response.queries.request[0].totalResults)/8);
+    images.google.photos = [];
+    for(var i=0; i < data.length; i++){
+        var p = data[i];
+        var photo = {};
+        photo.url = p.link;
+        // thumbnail width 150
+        photo.thumbnail = p.image.thumbnailLink;
+        images.google.photos.push(photo);
+    };
+};
+
+var jsonFlickrApi = function(response){
+    if(response.stat != "ok"){
+        alert('Unable to get photos from Flickr:' + response.message);
+        return;
+    }
+    var data = response.photos;
+    images.flickr.pages = Math.ceil(Number(data.total)/8);
+    images.flickr.photos = [];
+    for(var i=0; i < data.photo.length; i++){
+        var p = data.photo[i];
+        var photo = {};
+        photo.url = "https://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg".format(p.farm, p.server, p.id, p.secret);
+        // t for thumbnail, 100 on longest side
+        photo.thumbnail = "https://farm{0}.staticflickr.com/{1}/{2}_{3}_{4}.jpg".format(p.farm, p.server, p.id, p.secret, "q");
+        images.flickr.photos.push(photo);
+    };
+};
+
+var jsonUrlApi = function(response){
+    var data = JSON.parse(response);
+    console.log(data);
+    data = data.urls;
+    for(var i=0; i<data.length; i++){
+        data[i].thumbnail = data[i].url;
+    };
+    images.url.pages = Math.ceil(data.length / 8);
+    images.url.photos = data;
+}
+
+var constructUrl = function(type){
+    if(type == 'flickr'){
+        return "https://api.flickr.com/services/rest/?" + 
+            "method=flickr.photos.search" + 
+            "&api_key=8213780dead35d871cd1a9f5a07e8401" + 
+            "&format=json" + 
+            "&license=1,2,3,4,5,6,7" +
+            "&per_page=8" + 
+            "&page=" + images.flickr.page +
+            "&text=" + images.query;
+    };
+    if(type == 'google'){
+        return "https://www.googleapis.com/customsearch/v1?" + 
+            "key=AIzaSyBJChI0548AV2m5mTeuH9oNEF8Eii1UL7k" +
+            "&cx=015946843765970452323:8ogczsyyuiq" + 
+            "&searchType=image" +
+            "&num=8" +
+            "&start=" + images.google.start +
+            "&q=" + images.query;
+    };
+    if(type == 'url'){
+        return "http://localhost:8000/api/media-field/images/?"+
+            "url=" + images.url.query;
+    }
+};
+
+var querySearch = function(type, callback) {
+    var url = constructUrl(type);
+    loadJSON(url, function(data){
+        if(callback){
+            callback(data);
+        }
+    });
+};
+
+var images = {
+    query: '',
+    flickr: {
+        page: 1,
+        pages: 0,
+        nextPage: nextPage,
+        prevPage: prevPage,
+        getPhotos: getPhotos,
+        photos: [],
+        sync: function(callback){
+            querySearch('flickr',function(data){
+                eval(data);
+                if(callback){
+                    callback(data);
+                }
+            });
+        }
+    },
+    google: {
+        page: 1,
+        start: 1,
+        pages: 0,
+        nextPage: googleNextPage,
+        prevPage: googlePrevPage,
+        getPhotos: getGooglePhotos,
+        photos: [],
+        sync: function(callback){
+            querySearch('google',function(data){
+                jsonGoogleApi(data);
+                if(callback){
+                    callback(data);
+                }
+            });
+        }
+    },
+    url: {
+        query: '',
+        page: 1,
+        pages: 0,
+        photos: [],
+        nextPage: {},
+        prevPage: {},
+        getPhotos: function(){
+            var start = (this.page - 1) * 8;
+            var end = (this.page * 8) < this.pages ? (this.page * 8) : this.pages;
+            return this.photos.slice(start, end);
+        },
+        sync: function(callback){
+            querySearch('url', function(data) {
+                jsonUrlApi(data);
+                if(callback){
+                    callback(data);
+                }
+            });
+        }
+    }
+};
+
+
+var view = {};
+view.search = {};
+view.url = {};
+view.image = document.getElementById('media_widget_image');
+view.search.button = document.getElementById('searchButton');
+view.search.input = document.getElementById('searchInput');
+view.url.button = document.getElementById('urlButton');
+view.url.input = document.getElementById('urlInput');
+view.search.wrapper = document.getElementById('flickr_google_wrapper');
+view.url.wrapper = document.getElementById('url_wrapper');
+
+view.search.button.onclick = function() {
+    var query = view.search.input.value;
+    images.query = query;
+    images.flickr.sync(function(data){
+       view.search.drawWrapper();
+       view.drawThumbnails(images.flickr.getPhotos(), view.search.ul);
+        view.search.page.innerHTML = images.flickr.page + " of " + images.flickr.pages;
+    });
+    images.google.sync();
+};
+view.url.button.onclick = function() {
+    images.url.query = view.url.input.value;
+    images.url.sync(function(data){
+        view.url.drawWrapper();
+        view.drawThumbnails(images.url.getPhotos(), view.url.ul);
+        view.url.page.innerHTML = images.url.page + " of " + images.url.pages;
+    });
+};
+
+view.search.drawWrapper = function() {
+    view.search.wrapper.innerHTML = '<div class="media_widget_row" style="text-align:center;">' +
+                    '<input type="radio" name="search" value="flickr" id="flickr" checked>Flickr ' +
+                    '<input type="radio" name="search" value="google" id="google">Google' +
+                '</div>' +
+                '<ul id="flickr_google" class="media_widget_thumbnails" style="margin-left:0px;margin-bottom:0px;padding-left:0px;">' +
+                '</ul>' +
+                '<div class="media_widget_row" style="text-align:center;">' +
+                    '<a id="flickr_google_prev" href="#">&lt;prev</a>' +
+                    ' page <span id="flickr_google_page"></span> ' +
+                    '<a id="flickr_google_next" href="#">next&gt;</a>' +
+                '</div>';
+    view.search.ul = document.getElementById('flickr_google');
+    view.search.next = document.getElementById('flickr_google_next');
+    view.search.prev = document.getElementById('flickr_google_prev');
+    view.search.page = document.getElementById('flickr_google_page');
+    view.search.flickr = document.getElementById('flickr');
+    view.search.google = document.getElementById('google');
+
+    view.search.next.onclick = function(e) {
+        e.preventDefault();
+        
+        if(view.search.flickr.checked){
+            images.flickr.nextPage();
+            images.flickr.sync(function(data){
+                view.drawThumbnails(images.flickr.getPhotos(), view.search.ul);
+                view.search.page.innerHTML = images.flickr.page + " of " + images.flickr.pages;
+            });
+        } else{
+            images.google.nextPage();
+            images.google.sync(function(data){
+               view.drawThumbnails(images.google.getPhotos(), view.search.ul);
+                view.search.page.innerHTML = images.google.page + " of " + images.google.pages;
+            });
+        };
+    };
+    view.search.prev.onclick = function(e) {
+        e.preventDefault();
+        var photos = [];
+        if(view.search.flickr.checked){
+            images.flickr.prevPage();
+            images.flickr.sync(function(data){
+               view.drawThumbnails(images.flickr.getPhotos(), view.search.ul);
+                view.search.page.innerHTML = images.flickr.page + " of " + images.flickr.pages;
+            });
+        } else{
+            images.google.prevPage();
+            images.google.sync(function(data){
+               view.drawThumbnails(images.google.getPhotos(), view.search.ul);
+                view.search.page.innerHTML = images.google.page + " of " + images.google.pages;
+            });
+        };
+    };
+    view.search.flickr.onclick = function(){
+        var photos = images.flickr.getPhotos();
+        view.search.page.innerHTML = images.flickr.page + " of " + images.flickr.pages;
+        view.drawThumbnails(photos, view.search.ul);
+    };
+    view.search.google.onclick = function(){
+        var photos = images.google.getPhotos();
+        view.search.page.innerHTML = images.google.page + " of " + images.google.pages;
+        view.drawThumbnails(photos, view.search.ul);
+    };
+};
+view.url.drawWrapper = function() {
+    view.url.wrapper.innerHTML = '<ul id="url" class="media_widget_thumbnails" style="margin-left:0px;margin-bottom:0px;padding-left:0px;">' +
+                '</ul>' +
+                '<div class="media_widget_row" style="text-align:center;">' +
+                    '<a id="url_prev" href="#">&lt;prev</a>' +
+                    ' page <span id="url_page">1</span> ' +
+                    '<a id="url_next" href="#">next&gt;</a>' +
+                '</div>';
+    view.url.ul = document.getElementById('url');
+    view.url.next = document.getElementById('url_next');
+    view.url.prev = document.getElementById('url_prev');
+    view.url.page = document.getElementById('url_page');
+
+
+    view.url.next.onclick = function(e) {
+        e.preventDefault();
+        alert('next');
+        /*
+        images.flickr.nextPage();
+        var photos = images.flickr.getPhotos();
+        drawThumbnails(photos, view.search.ul);
+        view.search.page.innerHTML = images.flickr.page;
+        */
+    };
+    view.url.prev.onclick = function(e) {
+        e.preventDefault();
+        alert('prev');
+        /*
+        images.flickr.prevPage();
+        var photos = images.flickr.getPhotos();
+        drawThumbnails(photos, view.search.ul);
+        view.search.page.innerHTML = images.flickr.page;
+        */
+    };
+
+};
+
+view.drawThumbnails = function(photos, ul){
+    var li = ' <li style="list-style-type:none; display:inline;">' +
+        '<a href="#"><img id="thumbnail_{0}" class="media_widget_thumbnail" src="{1}" style="width:23%;"></a>' +
+        '</li>';
+    var thumbnails = '';
+    for(var i = 0; i < photos.length; i++){
+        thumbnails += li.format(i, photos[i].thumbnail);
+    }
+    ul.innerHTML = '';
+    ul.innerHTML = thumbnails;
+
+    var onThumbnailClick = function(photo){
+        return function(e){
+            e.preventDefault();
+            view.image.src = photo.url
+        };
+    };
+    
+    var thumbnails = document.getElementsByClassName('media_widget_thumbnail');
+    for(var i=0; i<thumbnails.length; i++){
+        thumbnails[i].onclick = onThumbnailClick(photos[i]);
+    }
+};
+</script>
+</body>
+</html>
