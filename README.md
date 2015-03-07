@@ -10,34 +10,32 @@ django-adv-imagefield allows you to add an ImageField and provides a widget that
 3.  In settings.py set: `FLICKR_API_KEY`, `GOOGLE_API_KEY` and `GOOGLE_SENGINE_ID`
 4.  In your root `url.py` add one more url pattern: `url(r'^api/', include('media_field.api')),`
 5.  In your `models.py` import and add to your model `MediaField`
-```
-from django.db import models
-from media_field.db import MediaField
-
-class TestModel(models.Model):
-    name = models.CharField(max_length=255)
-    image = MediaField(blank=True)
-```
+    ```
+    from django.db import models
+    from media_field.db import MediaField
+    
+    class TestModel(models.Model):
+        name = models.CharField(max_length=255)
+        image = MediaField(blank=True)
+    ```
 This will allow using ordinary ModelForm.
-
 6.  If you want using `MediaField` in django-admin, then in your app's admin.py import `MediaFieldWidget` and specify it for your `ModelAdmin`
-```
-from django.contrib import admin
-from .models import TestModel
-from media_field.db import MediaField
-from media_field.forms import MediaFieldWidget
-
-class TestModelAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        MediaField: {'widget': MediaFieldWidget},
-    }
-admin.site.register(TestModel, TestModelAdmin)
-```
-
+    ```
+    from django.contrib import admin
+    from .models import TestModel
+    from media_field.db import MediaField
+    from media_field.forms import MediaFieldWidget
+    
+    class TestModelAdmin(admin.ModelAdmin):
+        formfield_overrides = {
+            MediaField: {'widget': MediaFieldWidget},
+        }
+    admin.site.register(TestModel, TestModelAdmin)
+    ```
 7. If you want to change default widget width (100%) and image width(30%), you may specify the width in your form field like this
-```
-image = MediaField(blank=True, attrs={'width': '500px', 'image_width': '50%'})
-```
+    ```
+    image = MediaField(blank=True, attrs={'width': '500px', 'image_width': '50%'})
+    ```
 
 ## Installing and running test project
 
