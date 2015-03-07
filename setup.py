@@ -2,17 +2,19 @@ from distutils.core import setup
 
 setup(
   name = 'django-adv-imagefield',
-  packages = ['django-adv-imagefield'],
-  version = '0.1',
+  packages = ['media-field'],
+  version = '0.0.2',
   description = 'Advanced ImageField for Django that provides widget to search Flickr and Google Images',
   author = 'Devang Mundhra',
   author_email = 'devangmundhra@gmail.com',
   url = 'https://github.com/devangmundhra/django-adv-imagefield',
   license='MIT',
-  download_url = 'https://github.com/devangmundhra/django-adv-imagefield/0.1',
+  download_url = 'https://github.com/devangmundhra/django-adv-imagefield/0.0.2',
   keywords = ['django', 'imagefield', 'media', 'flickr', 'google-image-search',],
   install_requires=[
-        'django>=1.3',
+        'Django>=1.7',
+        'Pillow>=2.7.0',
+        'BeautifulSoup>=3.2.1',
         ],
   classifiers = [
         'Development Status :: 4 - Beta',
