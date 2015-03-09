@@ -55,3 +55,5 @@ target/
 
 # PyCharm
 .idea/
+
+example/db.sqlite3
