@@ -4,7 +4,7 @@ setup(
   name = 'django-adv-imagefield',
   packages=find_packages(),
   include_package_data=True,
-  version = '0.0.3',
+  version = '0.0.4',
   description = 'Advanced ImageField for Django that provides widget to search Flickr and Google Images',
   author = 'Devang Mundhra',
   author_email = 'devangmundhra@gmail.com',
@@ -14,7 +14,7 @@ setup(
   install_requires=[
         'Django>=1.7',
         'Pillow>=2.7.0',
-        'BeautifulSoup>=3.2.1',
+        'beautifulsoup4>=4.3.2',
         ],
   classifiers = [
         'Development Status :: 4 - Beta',

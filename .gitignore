@@ -56,4 +56,7 @@ target/
 # PyCharm
 .idea/
 
+# Example files
 example/db.sqlite3
+example/media/
+example/static/

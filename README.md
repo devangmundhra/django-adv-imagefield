@@ -44,5 +44,10 @@ This will allow using ordinary ModelForm.
 3.  `python manage.py makemigrations`
 4.  `python manage.py migrate`
 5.  `python manage.py createsuperuser`
-6.  `python manage.py runserver`
-7.  Navigate to http://localhost:8000/admin , login and play with `TestModel` and `MediaField`.
+6.  `python manage.py collectstatic`
+7.  `python manage.py runserver`
+8.  Navigate to http://localhost:8000/admin , login and play with `TestModel` and `MediaField`.
+
+### References to Flickr and Google Image Search APIs
+1.  [Flickr Photo Search](https://www.flickr.com/services/api/flickr.photos.search.html) [Image Size Ref](https://www.flickr.com/services/api/misc.urls.html)
+2.  [Google Custom Image Search](https://developers.google.com/custom-search/json-api/v1/reference/cse/list)

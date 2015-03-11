@@ -117,7 +117,7 @@ var constructUrl = function(type){
             "&api_key=" + FLICKR_API_KEY +
             "&format=json" +
             "&license=1,2,3,4,5,6,7" +
-            "&sort=sort" +
+            "&sort=relevance" +
             "&media=photos" +
             "&per_page=8" +
             "&page=" + images.flickr.page +
@@ -128,8 +128,11 @@ var constructUrl = function(type){
             "key=" + GOOGLE_API_KEY + 
             "&cx=" + GOOGLE_SENGINE_ID +
             "&searchType=image" +
+            "&imgType=photos" +
             "&num=8" +
             "&start=" + images.google.start +
+            "&safe=high" +
+            "&rights=cc_publicdomain,cc_attribute,cc_sharealike,cc_noncommercial,cc_nonderived" +
             "&q=" + images.query;
     };
     if(type == 'url'){
@@ -346,7 +349,7 @@ view.url.drawWrapper = function() {
 
 view.drawThumbnails = function(photos, ul){
     var li = ' <li style="list-style-type:none; display:inline;">' +
-        '<a href="#"><img id="thumbnail_{0}" class="media_widget_thumbnail" src="{1}" style="width:23%;"></a>' +
+        '<a href="#"><img id="thumbnail_{0}" class="media_widget_thumbnail" src="{1}" style="width:150px;"></a>' +
         '</li>';
     var thumbnails = '';
     for(var i = 0; i < photos.length; i++){
