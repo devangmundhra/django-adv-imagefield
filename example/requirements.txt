@@ -1,4 +1,4 @@
 beautifulsoup4==4.3.2
 Django==1.7
 django-adv-imagefield==0.0.4
-Pillow==2.7.0
+Pillow==9.0.0
